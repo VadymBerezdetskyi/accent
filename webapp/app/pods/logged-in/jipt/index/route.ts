@@ -42,6 +42,26 @@ export default class IndexRoute extends Route {
     }: {query: any; page: number; document: any; version: any},
     transition: Transition
   ) {
+    const variables: {
+      projectId: string,
+      query: string,
+      page: number,
+      document: string | null,
+      version: string | null,
+      revisionId?: string
+    } = {
+      projectId: this.routeParams.fetch(transition, 'logged-in.jipt').projectId,
+      query,
+      page,
+      document,
+      version,
+    };
+
+    const revisionId = transition.to.queryParams.revisionId;
+    if (revisionId) {
+      variables.revisionId = revisionId;
+    }
+
     this.subscription = this.apolloSubscription.graphql(
       () => this.modelFor(this.routeName),
       translationsQuery,
@@ -58,15 +78,7 @@ export default class IndexRoute extends Route {
         }),
         options: {
           fetchPolicy: 'cache-and-network',
-          variables: {
-            projectId: this.routeParams.fetch(transition, 'logged-in.jipt')
-              .projectId,
-            revisionId: transition.to.queryParams.revisionId,
-            query,
-            page,
-            document,
-            version,
-          },
+          variables,
         },
       }
     );
